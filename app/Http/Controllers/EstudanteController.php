@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EstudanteRequest;
 use Illuminate\Http\Request;
 use App\Models\Estudante;
 
 class EstudanteController extends Controller
 {
     //
-    public function registerEstudante(Request $request){
-      $estudante = Estudante::create([
-        "name"=> $request->input("name"),
-        "idade"=> $request->input("idade"),
-        "curso"=> $request->input("curso"),
-      ]);
+    public function registerEstudante(EstudanteRequest $request){
+      $estudante = Estudante::create($request->validated());
       return response()->json([
+        "mensagem"=>'Aluno registado com sucesso !!!',
         "data"=> $estudante,
       ]);
     }
@@ -25,21 +23,31 @@ class EstudanteController extends Controller
         $estudante->where("name","like","%".$search."%")->orWhere("curso","like","%".$search."%");
      }
         return response()->json([
+            "mensagem"=>'Alunos encontrados com sucesso !!!',
             "data"=> $estudante->get()
         ]);
 
     }  
-    public function updateEstudante(Request $request, $id){
-        $estudante = Estudante::findOrFail($id);
-        $estudante->update(["name"=> $request->input("name"),
-        "idade"=> $request->input("idade"),
-        "curso"=> $request->input("curso")]);
+    public function updateEstudante(EstudanteRequest $request, $id){
+        $estudante = Estudante::find($id);
+        if(!$estudante){
+           return response()->json([
+            "mensagem"=>'Este ID não está vinculado a nenhum aluno !!!',
+           ]); 
+        }
+        $estudante->update($request->validated());
         return response()->json([
+            "mensagem"=>'Alunos actualizados com sucesso !!!',
             "data"=> $estudante,
             ]);
     }
     public function deleteEstudante($id){
-        $estudante = Estudante::findOrFail($id);
+         $estudante = Estudante::find($id);
+        if(!$estudante){
+           return response()->json([
+            "mensagem"=>'Este ID não está vinculado a nenhum aluno !!!',
+           ]); 
+        }
         $estudante->delete();
         return response()->json([
             "mensagem"=> "Aluno eliminado com sucesso!!!",
